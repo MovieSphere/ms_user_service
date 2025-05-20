@@ -2,10 +2,8 @@ package com.upao.infraestructura.ms_user_service.controllers;
 
 
 import com.upao.infraestructura.ms_user_service.models.User;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import com.upao.infraestructura.ms_user_service.repositories.UserRepository;
+import com.upao.infraestructura.ms_user_service.services.UserService;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -13,15 +11,25 @@ import java.util.List;
 @RequestMapping("/users")
 public class UserController {
 
-    private final UserRepository userRepository;
+    private final UserService service;
 
-    public UserController(UserRepository userRepository) {
-        this.userRepository = userRepository;
+    public UserController(UserService service) {
+        this.service = service;
     }
 
     @GetMapping
-    public List<User> getAllUsers() {
-        return userRepository.findAll();
+    public List<User> getUsers() {
+        return service.findAll();
+    }
+
+    @PostMapping
+    public User create(@RequestBody User user) {
+        return service.save(user);
+    }
+
+    @DeleteMapping("/{id}")
+    public void delete(@PathVariable Integer id) {
+        service.delete(id);
     }
 }
 
