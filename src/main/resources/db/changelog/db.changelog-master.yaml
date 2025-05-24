@@ -1,4 +1,5 @@
 databaseChangeLog:
+  # 1. Tabla users
   - changeSet:
       id: 1
       author: moviesphere-devs
@@ -8,18 +9,268 @@ databaseChangeLog:
             columns:
               - column:
                   name: id
-                  type: serial
+                  type: BIGSERIAL
                   constraints:
                     primaryKey: true
                     nullable: false
               - column:
                   name: name
-                  type: varchar(255)
+                  type: VARCHAR(255)
                   constraints:
                     nullable: false
               - column:
                   name: email
-                  type: varchar(255)
+                  type: VARCHAR(255)
                   constraints:
                     nullable: false
                     unique: true
+
+  # 2. Tabla profiles
+  - changeSet:
+      id: 2
+      author: moviesphere-devs
+      changes:
+        - createTable:
+            tableName: profiles
+            columns:
+              - column:
+                  name: id
+                  type: BIGSERIAL
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: user_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: name
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: locale
+                  type: VARCHAR(5)
+            # FK
+        - addForeignKeyConstraint:
+            baseTableName: profiles
+            baseColumnNames: user_id
+            referencedTableName: users
+            referencedColumnNames: id
+            constraintName: fk_profiles_users
+
+  # 3. Tabla watch_history
+  - changeSet:
+      id: 3
+      author: moviesphere-devs
+      changes:
+        - createTable:
+            tableName: watch_history
+            columns:
+              - column:
+                  name: id
+                  type: BIGSERIAL
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: profile_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: video_id
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: start_time
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: end_time
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: watch_pct
+                  type: REAL
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            baseTableName: watch_history
+            baseColumnNames: profile_id
+            referencedTableName: profiles
+            referencedColumnNames: id
+            constraintName: fk_wh_profiles
+
+  # 4. Tabla rating_events
+  - changeSet:
+      id: 4
+      author: moviesphere-devs
+      changes:
+        - createTable:
+            tableName: rating_events
+            columns:
+              - column:
+                  name: profile_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: video_id
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: rating
+                  type: SMALLINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: rated_at
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: false
+        - addPrimaryKey:
+            tableName: rating_events
+            columnNames: profile_id,video_id
+            constraintName: pk_rating_events
+        - addForeignKeyConstraint:
+            baseTableName: rating_events
+            baseColumnNames: profile_id
+            referencedTableName: profiles
+            referencedColumnNames: id
+            constraintName: fk_re_profiles
+
+  # 5. Tabla search_queries
+  - changeSet:
+      id: 5
+      author: moviesphere-devs
+      changes:
+        - createTable:
+            tableName: search_queries
+            columns:
+              - column:
+                  name: id
+                  type: BIGSERIAL
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: profile_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: query
+                  type: TEXT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: executed_at
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            baseTableName: search_queries
+            baseColumnNames: profile_id
+            referencedTableName: profiles
+            referencedColumnNames: id
+            constraintName: fk_sq_profiles
+
+  # 6. Tabla category_affinity
+  - changeSet:
+      id: 6
+      author: moviesphere-devs
+      changes:
+        - createTable:
+            tableName: category_affinity
+            columns:
+              - column:
+                  name: profile_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: category
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: affinity
+                  type: REAL
+                  constraints:
+                    nullable: false
+        - addPrimaryKey:
+            tableName: category_affinity
+            columnNames: profile_id,category
+            constraintName: pk_cat_aff
+        - addForeignKeyConstraint:
+            baseTableName: category_affinity
+            baseColumnNames: profile_id
+            referencedTableName: profiles
+            referencedColumnNames: id
+            constraintName: fk_ca_profiles
+
+  # 7. Tabla tag_affinity
+  - changeSet:
+      id: 7
+      author: moviesphere-devs
+      changes:
+        - createTable:
+            tableName: tag_affinity
+            columns:
+              - column:
+                  name: profile_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: tag
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: affinity
+                  type: REAL
+                  constraints:
+                    nullable: false
+        - addPrimaryKey:
+            tableName: tag_affinity
+            columnNames: profile_id,tag
+            constraintName: pk_tag_aff
+        - addForeignKeyConstraint:
+            baseTableName: tag_affinity
+            baseColumnNames: profile_id
+            referencedTableName: profiles
+            referencedColumnNames: id
+            constraintName: fk_ta_profiles
+
+  # 8. Tabla user_embeddings (pgvector)
+  - changeSet:
+      id: 8
+      author: moviesphere-devs
+      changes:
+        - createTable:
+            tableName: user_embeddings
+            columns:
+              - column:
+                  name: profile_id
+                  type: BIGINT
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: embedding
+                  type: vector(128)
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            baseTableName: user_embeddings
+            baseColumnNames: profile_id
+            referencedTableName: profiles
+            referencedColumnNames: id
+            constraintName: fk_ue_profiles
